@@ -25,19 +25,20 @@ window.requestAnimationFrame = (function () {
 }());
 
 const paint = (context) => {
+    let i = 0;
     // Clean canvas
     context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw snake
+    // Draw player
     context.fillStyle = '#0f0';
-    for (i = 0, l = body.length; i < l; i += 1) {
+    for (i = 0; i < body.length; i += 1) {
         body[i].fill(context);
     }
 
     // Draw walls
     context.fillStyle = '#999';
-    for (i = 0, l = wall.length; i < l; i += 1) {
+    for (i = 0; i < wall.length; i += 1) {
         wall[i].fill(context);
     }
 
@@ -48,12 +49,6 @@ const paint = (context) => {
     // Draw score
     context.fillStyle = '#0f0';
     context.fillText('Score: ' + score, 0, 10);
-
-    // Move Body
-    for (i = body.length - 1; i > 0; i -= 1) {
-        body[i].x = body[i - 1].x;
-        body[i].y = body[i - 1].y;
-    }
 
     // Draw pause
     if (pause) {
@@ -83,23 +78,18 @@ const reset = () => {
 }
 
 const act = () => {
+    let i = 0;
+
     if (!pause) {
-    // GameOver Reset
+        // GameOver Reset
         if (gameover) {
             reset();
         }
-        // Out of Srceen
-        if (body[0].x > canvas.width) {
-            body[0].x = 0;
-        }
-        if (body[0].x < 0) {
-            body[0].x = canvas.width;
-        }
-        if (body[0].y > canvas.height) {
-            body[0].y = 0;
-        }
-        if (body[0].y < 0) {
-            body[0].y = canvas.height;
+
+        // Move Body
+        for (i = body.length - 1; i > 0; i -= 1) {
+            body[i].x = body[i - 1].x;
+            body[i].y = body[i - 1].y;
         }
 
         // Change Direction
@@ -130,12 +120,18 @@ const act = () => {
             body[0].x -= 10;
         }
 
-        // Food Intersects
-        if (body[0].intersects(food)) {
-            body.push(new Rectangle(food.x, food.y, 10, 10));
-            score += 1;
-            food.x = random(canvas.width / 10 - 1) * 10;
-            food.y = random(canvas.height / 10 - 1) * 10;
+        // Out Screen
+        if (body[0].x > canvas.width - body[0].width) {
+            body[0].x = 0;
+        }
+        if (body[0].y > canvas.height - body[0].height) {
+            body[0].y = 0;
+        }
+        if (body[0].x < 0) {
+            body[0].x = canvas.width - body[0].width;
+        }
+        if (body[0].y < 0) {
+            body[0].y = canvas.height - body[0].height;
         }
 
         // Wall Intersects
@@ -153,9 +149,17 @@ const act = () => {
         // Body Intersects
         for (i = 2; i < body.length; i += 1) {
             if (body[0].intersects(body[i])) {
-                pause = true;
                 gameover = true;
+                pause = true;
             }
+        }
+
+        // Food Intersects
+        if (body[0].intersects(food)) {
+            body.push(new Rectangle(food.x, food.y, 10, 10));
+            score += 1;
+            food.x = random(canvas.width / 10 - 1) * 10;
+            food.y = random(canvas.height / 10 - 1) * 10;
         }
     }
     // Pause/Unpause
