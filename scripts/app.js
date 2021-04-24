@@ -1,7 +1,7 @@
 let canvas = null;
 let context = null;
 let lastPress = null;
-let dir = 0;
+let dir = 1;
 let pause = true;
 let food = null;
 let score = 0;
@@ -9,6 +9,12 @@ let wall = new Array();
 let gameover = false;
 let body = new Array();
 
+const viewportWidth = window.innerWidth;
+const viewportHeight = window.innerHeight;
+const aEat = new Audio();
+const aDie = new Audio();
+const iBody = new Image();
+const iFood = new Image();
 const KEY_LEFT = 37;
 const KEY_UP = 38;
 const KEY_RIGHT = 39;
@@ -31,9 +37,10 @@ const paint = (context) => {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw player
-    context.fillStyle = '#0f0';
+    // context.fillStyle = '#0f0';
     for (i = 0; i < body.length; i += 1) {
-        body[i].fill(context);
+        // body[i].fill(context);
+        context.drawImage(iBody, body[i].x, body[i].y);
     }
 
     // Draw walls
@@ -43,8 +50,9 @@ const paint = (context) => {
     }
 
     // Draw food
-    context.fillStyle = '#f00';
-    food.fill(context);
+    // context.fillStyle = '#f00';
+    // food.fill(context);
+    context.drawImage(iFood, food.x, food.y);
 
     // Draw score
     context.fillStyle = '#0f0';
@@ -143,6 +151,7 @@ const act = () => {
             if (body[0].intersects(wall[i])) {
                 pause = true;
                 gameover = true;
+                aDie.play();
             }
         }
 
@@ -160,6 +169,7 @@ const act = () => {
             score += 1;
             food.x = random(canvas.width / 10 - 1) * 10;
             food.y = random(canvas.height / 10 - 1) * 10;
+            aEat.play();
         }
     }
     // Pause/Unpause
@@ -183,6 +193,11 @@ const run = () => {
     act();
 }
 
+const canvasResize = () => {
+    canvas.height = viewportHeight * 0.7;
+    canvas.width = viewportWidth * 0.8;
+}
+
 const init = () => {
     // Get canvas and context
     canvas = document.getElementById('canvas')
@@ -190,6 +205,8 @@ const init = () => {
 
     // Create body[0] and food
     body[0] = new Rectangle(40, 40, 10, 10);
+    body.push(new Rectangle(30, 40, 10, 10));
+    body.push(new Rectangle(20, 40, 10, 10));
     food = new Rectangle(80, 80, 10, 10);
 
     // Create walls
@@ -201,6 +218,14 @@ const init = () => {
     // Start game
     run();
     repaint();
+
+    // Load assets
+    iBody.src = '../assets/body.png';
+    iFood.src = '../assets/fruit.png';
+    aEat.src = '../assets/chomp.oga';
+    aDie.src = '../assets/dies.oga';
+
+    canvasResize();
 }
 
 function Rectangle (x, y, width, height) {
@@ -230,7 +255,11 @@ function Rectangle (x, y, width, height) {
 
 window.addEventListener('load', init, false);
 
+console.log(viewportWidth);
+console.log(viewportHeight);
+
 document.addEventListener('keydown',  (evt) => {
     lastPress = evt.which;
-    }, false);
+}, false);
 
+window.onresize = canvasResize;
